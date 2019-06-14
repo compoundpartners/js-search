@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n cms_tags %}
+
+{% block content %}
+    {% include "js_search/includes/search_form.html" %}
+
+  <ul>
+    {% for article in article_list %}
+      {% include "aldryn_newsblog/includes/article-item.html" %}
+    {% endfor %}
+    {% for person in person_list %}
+      {% include "aldryn_people/includes/person_small.html" %}
+    {% endfor %}
+    {% for event in event_list %}
+        {% include "js_events/includes/event-item.html" %}
+    {% endfor %}
+    {% for service in service_list %}
+      {% include "js_services/includes/service-item.html" %}
+    {% endfor %}
+  </ul>
+  <nav>
+    {% include "js_search/includes/pagination.html" %}
+  </nav>
+
+
+{% endblock content %}

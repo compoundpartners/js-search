@@ -1,0 +1,6 @@
+{
+    "package-name": "js-search",
+    "installed-apps": [
+        "js_search"
+    ]
+}

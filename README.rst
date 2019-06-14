@@ -1,0 +1,5 @@
+JS Search
+====
+Addon description
+
+
