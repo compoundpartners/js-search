@@ -7,6 +7,11 @@ ADD_FILTERED_CATEGORIES = getattr(
     'SEARCH_ADD_FILTERED_CATEGORIES',
     [],
 )
+ADDITIONAL_EXCLUDE = getattr(
+    settings,
+    'SEARCH_ADDITIONAL_EXCLUDE',
+    {},
+)
 TYPES = getattr(
     settings,
     'SEARCH_TYPES',
