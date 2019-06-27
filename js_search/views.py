@@ -108,10 +108,12 @@ class SearchView(MultipleObjectMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         requested_type = request.GET.get('type')
         self.object_list = []
+        specific_filter = None
         for name, _ in TYPES:
             if not requested_type or requested_type == name:
                 filterset = self.filters[name](request.GET, queryset=self.qss[name])
-
+                if requested_type == name:
+                    specific_filter = filterset
                 if not filterset.is_bound or filterset.is_valid() or not self.get_strict():
                     self.object_list.append(filterset.qs)
 
@@ -127,7 +129,8 @@ class SearchView(MultipleObjectMixin, TemplateView):
         context = self.get_context_data(
             filter=SearchFilters(self.request.GET, queryset=Article.objects.none()),
             object_list=self.object_list,
-            pagination=pagination
+            pagination=pagination,
+            specific_filter=specific_filter,
         )
         index = 0
         for name, _ in TYPES:

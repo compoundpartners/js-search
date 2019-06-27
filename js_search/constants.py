@@ -20,6 +20,11 @@ TYPES = getattr(
     ('event', 'Event'),
     ('service','Service'))
 )
+FILTER_EMPTY_LABELS = getattr(
+    settings,
+    'SEARCH_FILTER_EMPTY_LABELS',
+    {}
+)
 try:
     IS_THERE_COMPANIES = True
     from js_companies.models import Company
