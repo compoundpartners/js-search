@@ -96,6 +96,10 @@ class SearchView(MultipleObjectMixin, TemplateView):
         'service': Service.objects.published(),
     }
     paginate_by = 20
+    strict = False
+
+    def get_strict(self):
+        return self.strict
 
     def dispatch(self, request, *args, **kwargs):
         self.request_language = get_language(request)
