@@ -5,6 +5,9 @@
     {% include "js_search/includes/search_form.html" %}
 
   <ul>
+    {% for title in title_list %}
+      <a href="{{ title.page.get_absolute_url }}">{{ title.title }}</a>
+    {% endfor %}
     {% for article in article_list %}
       {% include "aldryn_newsblog/includes/article-item.html" %}
     {% endfor %}

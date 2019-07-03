@@ -41,3 +41,16 @@ class SearchFilters(django_filters.FilterSet):
                 self.filters[name] = django_filters.ModelChoiceFilter('categories', label=category[1], queryset=qs)
                 self.filters[name].extra.update({'empty_label': 'by %s' % FILTER_EMPTY_LABELS.get(name, category[1])})
 
+
+class SearchFilter(django_filters.Filter):
+    def filter(self, qs, values):
+        values = values or ''
+        if len(values) > 0:
+            for value in values.strip().split():
+                value = value.strip()
+                if value:
+                    qs = qs.filter(search__search_data__icontains=value)
+        return qs
+
+class PageFilters(django_filters.FilterSet):
+    q = SearchFilter(label='Search the directory')

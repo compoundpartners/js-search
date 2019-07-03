@@ -15,7 +15,8 @@ ADDITIONAL_EXCLUDE = getattr(
 TYPES = getattr(
     settings,
     'SEARCH_TYPES',
-    (('article', 'Article'),
+    (('title', 'Page'),
+    ('article', 'Article'),
     ('person', 'Person'),
     ('event', 'Event'),
     ('service','Service'))
@@ -25,6 +26,12 @@ FILTER_EMPTY_LABELS = getattr(
     'SEARCH_FILTER_EMPTY_LABELS',
     {}
 )
+PAGE_PLACEHOLDER = getattr(
+    settings,
+    'SEARCH_PAGE_PLACEHOLDER',
+    'content'
+)
+
 try:
     IS_THERE_COMPANIES = True
     from js_companies.models import Company

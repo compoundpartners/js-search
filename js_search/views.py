@@ -9,7 +9,10 @@ from django.views.generic.list import MultipleObjectMixin
 from django.utils.translation import get_language_from_request
 from django.core.paginator import Paginator, Page
 from django.utils.functional import cached_property
+from django.db.models import Q
+from django.utils import timezone
 
+from cms.models import Title
 from menus.utils import set_language_changer
 from parler.views import TranslatableSlugMixin
 from django_filters.views import FilterMixin
@@ -24,7 +27,7 @@ from js_events.filters import EventFilters
 from js_services.models import Service
 from js_services.filters import ServiceFilters
 
-from .filters import SearchFilters
+from .filters import SearchFilters, PageFilters
 from .constants import TYPES
 from . import DEFAULT_APP_NAMESPACE
 
@@ -84,16 +87,11 @@ class SearchView(MultipleObjectMixin, TemplateView):
     template_name = 'js_search/index.html'
     paginator_class = MixPaginator
     filters = {
+        'title': PageFilters,
         'article': ArticleFilters,
         'person': PeopleFilters,
         'event': EventFilters,
         'service': ServiceFilters,
-    }
-    qss = {
-        'article': Article.objects.published(),
-        'person': Person.objects.published(),
-        'event': Event.objects.published(),
-        'service': Service.objects.published(),
     }
     paginate_by = 20
     strict = False
@@ -110,15 +108,29 @@ class SearchView(MultipleObjectMixin, TemplateView):
         return super(SearchView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
+        self.qss = {
+            'title': Title.objects.public().filter(
+                Q(page__publication_date__lt=timezone.now()) | Q(page__publication_date__isnull=True),
+                Q(page__publication_end_date__gte=timezone.now()) | Q(page__publication_end_date__isnull=True),
+                Q(redirect__exact='') | Q(redirect__isnull=True),
+                language=self.request_language
+            ).select_related('page').distinct(),
+            'article': Article.objects.published(),
+            'person': Person.objects.published(),
+            'event': Event.objects.published(),
+            'service': Service.objects.published(),
+        }
         requested_type = request.GET.get('type')
         self.object_list = []
         specific_filter = None
         for name, _ in TYPES:
             if not requested_type or requested_type == name:
-                filterset = self.filters[name](request.GET, queryset=self.qss[name])
+                filterset = self.filters[name](request.GET or None, queryset=self.qss[name])
                 if requested_type == name:
                     specific_filter = filterset
-                if not filterset.is_bound or filterset.is_valid() or not self.get_strict():
+                if not filterset.is_bound:
+                    self.object_list.append([])
+                elif filterset.is_bound or filterset.is_valid() or not self.get_strict():
                     self.object_list.append(filterset.qs)
 
         pagination = {
@@ -131,7 +143,7 @@ class SearchView(MultipleObjectMixin, TemplateView):
         pagination['pages_visible_total_negative'] = pages_visible_negative - 1
 
         context = self.get_context_data(
-            filter=SearchFilters(self.request.GET, queryset=Article.objects.none()),
+            filter=SearchFilters(self.request.GET or None, queryset=Title.objects.none()),
             object_list=self.object_list,
             pagination=pagination,
             specific_filter=specific_filter,
