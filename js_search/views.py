@@ -114,7 +114,7 @@ class SearchView(MultipleObjectMixin, TemplateView):
                 Q(page__publication_end_date__gte=timezone.now()) | Q(page__publication_end_date__isnull=True),
                 Q(redirect__exact='') | Q(redirect__isnull=True),
                 language=self.request_language
-            ).select_related('page').distinct(),
+            ).exclude(page__searchextension__show_on_search=False).select_related('page').distinct(),
             'article': Article.objects.published(),
             'person': Person.objects.published(),
             'event': Event.objects.published(),

@@ -10,10 +10,19 @@ from django.db.models.signals import post_save
 
 from cms.models import CMSPlugin, Title, Page
 from cms.utils.i18n import get_current_language, get_default_language
+from cms.extensions import PageExtension
+from cms.extensions.extension_pool import extension_pool
 
 from aldryn_newsblog.utils import get_plugin_index_data, get_request, strip_tags
 
 from .constants import PAGE_PLACEHOLDER
+
+
+class SearchExtension(PageExtension):
+    show_on_search = models.BooleanField(_('Show on search'), null=False, default=True)
+
+extension_pool.register(SearchExtension)
+
 
 @python_2_unicode_compatible
 class TitleSearch(models.Model):
