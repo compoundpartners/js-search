@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpResponse
 from django.views.generic import TemplateView
@@ -120,12 +121,18 @@ class SearchView(MultipleObjectMixin, TemplateView):
             'event': Event.objects.published(),
             'service': Service.objects.published(),
         }
+        self.sorting = {
+            'person': getattr(settings, 'ALDRYN_PEOPLE_DEFAULT_SORTING', ('last_name',),)
+        }
         requested_type = request.GET.get('type')
         self.object_list = []
         specific_filter = None
         for name, _ in TYPES:
             if not requested_type or requested_type == name:
-                filterset = self.filters[name](request.GET or None, queryset=self.qss[name])
+                order_by = ()
+                if requested_type == name:
+                    order_by = self.sorting.get(requested_type, order_by)
+                filterset = self.filters[name](request.GET or None, queryset=self.qss[name].order_by(*order_by))
                 if requested_type == name:
                     specific_filter = filterset
                 if not filterset.is_bound:
