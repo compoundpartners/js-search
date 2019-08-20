@@ -122,7 +122,8 @@ class SearchView(MultipleObjectMixin, TemplateView):
             'service': Service.objects.published(),
         }
         self.sorting = {
-            'person': getattr(settings, 'ALDRYN_PEOPLE_DEFAULT_SORTING', ('last_name',),)
+            'person': getattr(settings, 'ALDRYN_PEOPLE_DEFAULT_SORTING', ('last_name',),),
+            'article': ('-publishing_date',),
         }
         requested_type = request.GET.get('type')
         self.object_list = []
