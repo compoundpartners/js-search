@@ -7,6 +7,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpResponse
 from django.views.generic import TemplateView
 from django.views.generic.list import MultipleObjectMixin
+from django.utils import translation
 from django.utils.translation import get_language_from_request
 from django.core.paginator import Paginator, Page
 from django.utils.functional import cached_property
@@ -109,17 +110,18 @@ class SearchView(MultipleObjectMixin, TemplateView):
         return super(SearchView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
+        language = translation.get_language()
         self.qss = {
             'title': Title.objects.public().filter(
                 Q(page__publication_date__lt=timezone.now()) | Q(page__publication_date__isnull=True),
                 Q(page__publication_end_date__gte=timezone.now()) | Q(page__publication_end_date__isnull=True),
                 Q(redirect__exact='') | Q(redirect__isnull=True),
-                language=self.request_language
+                language=language
             ).exclude(page__searchextension__show_on_search=False).select_related('page').distinct(),
-            'article': Article.objects.published(),
-            'person': Person.objects.published(),
-            'event': Event.objects.published(),
-            'service': Service.objects.published(),
+            'article': Article.objects.published().active_translations(language),
+            'person': Person.objects.published().active_translations(language),
+            'event': Event.objects.published().active_translations(language),
+            'service': Service.objects.published().active_translations(language),
         }
         self.sorting = {
             'person': getattr(settings, 'ALDRYN_PEOPLE_DEFAULT_SORTING', ('last_name',),),
@@ -140,6 +142,7 @@ class SearchView(MultipleObjectMixin, TemplateView):
                     self.object_list.append([])
                 elif filterset.is_bound or filterset.is_valid() or not self.get_strict():
                     self.object_list.append(filterset.qs)
+
 
         pagination = {
             'pages_start': 10,
