@@ -81,7 +81,7 @@ def update_search_data(sender, instance, **kwargs):
         placeholder = (getattr(instance, '_placeholder_cache', None) or
                        instance.placeholder)
         if hasattr(placeholder, '_attached_model_cache'):
-            if placeholder._attached_model_cache == Page:
+            if placeholder._attached_model_cache == Page and placeholder.slot == PAGE_PLACEHOLDER:
                 page = placeholder.page
                 title = page.title_set.get(language=instance.language)
     if instance.__class__ == Title:
