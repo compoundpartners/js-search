@@ -74,22 +74,13 @@ class TitleSearch(models.Model):
 
 @receiver(post_save, dispatch_uid='page_update_search_data')
 def update_search_data(sender, instance, **kwargs):
-    is_cms_plugin = issubclass(instance.__class__, CMSPlugin)
-    title = None
-
-    if is_cms_plugin:
-        placeholder = (getattr(instance, '_placeholder_cache', None) or
-                       instance.placeholder)
-        if hasattr(placeholder, '_attached_model_cache'):
-            if placeholder._attached_model_cache == Page and placeholder.slot == PAGE_PLACEHOLDER:
-                page = placeholder.page
-                title = page.title_set.get(language=instance.language)
     if instance.__class__ == Title:
         title = instance
-    if title:
-        if hasattr(title, 'search'):
-            search = title.search
-        else:
-            search = TitleSearch.objects.create(title=title)
-        search.search_data = search.get_search_data(instance.language)
-        search.save()
+        if title:
+            if hasattr(title, 'search'):
+                search = title.search
+            else:
+                search = TitleSearch.objects.create(title=title)
+            search.search_data = search.get_search_data(instance.language)
+            search.save()
+
