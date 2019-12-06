@@ -16,8 +16,13 @@ from .constants import (
 if IS_THERE_COMPANIES:
     from js_companies.models import Company
 
+try:
+    from custom.js_search.filters import CustomFilterMixin
+except:
+    class CustomFilterMixin(object):
+        pass
 
-class SearchFilters(django_filters.FilterSet):
+class SearchFilters(CustomFilterMixin, django_filters.FilterSet):
     q = django_filters.CharFilter(label='Search the directory')
     type = django_filters.ChoiceFilter(label='Type', widget=forms.RadioSelect())
     service = django_filters.ModelChoiceFilter(label='Service', queryset=Service.objects.published().exclude(**ADDITIONAL_EXCLUDE.get('service', {})).order_by('translations__title'))
