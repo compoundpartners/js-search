@@ -141,7 +141,7 @@ class SearchView(MultipleObjectMixin, TemplateView):
                 if not filterset.is_bound:
                     self.object_list.append([])
                 elif filterset.is_bound or filterset.is_valid() or not self.get_strict():
-                    self.object_list.append(filterset.qs)
+                    self.object_list.append(filterset.qs.distinct())
 
 
         pagination = {
