@@ -72,6 +72,31 @@ class TitleSearch(models.Model):
         super(TitleSearch, self).save(*args, **kwargs)
 
 
+@python_2_unicode_compatible
+class SearchField(CMSPlugin):
+    title = models.CharField(
+        max_length=255,
+        verbose_name=_('Title'),
+        null=True,
+        blank=True,
+    )
+    results_type = models.CharField(
+        max_length=255,
+        verbose_name=_('Results'),
+        default='',
+        blank=True,
+    )
+    layout = models.CharField(
+        blank=True,
+        default='',
+        max_length=60,
+        verbose_name=_('layout')
+    )
+
+    def __str__(self):
+        return self.title or str(self.pk)
+
+
 @receiver(post_save, dispatch_uid='page_update_search_data')
 def update_search_data(sender, instance, **kwargs):
     if instance.__class__ == Title:

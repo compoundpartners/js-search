@@ -31,6 +31,12 @@ PAGE_PLACEHOLDER = getattr(
     'SEARCH_PAGE_PLACEHOLDER',
     'content'
 )
+PLUGIN_LAYOUTS = getattr(
+    settings,
+    'SEARCH_PLUGIN_LAYOUTS',
+    (),
+)
+
 
 try:
     IS_THERE_COMPANIES = True

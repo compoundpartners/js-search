@@ -25,8 +25,8 @@ except:
 class SearchFilters(CustomFilterMixin, django_filters.FilterSet):
     q = django_filters.CharFilter(label='Search the directory')
     type = django_filters.ChoiceFilter(label='Type', widget=forms.RadioSelect())
-    service = django_filters.ModelChoiceFilter(label='Service', queryset=Service.objects.published().exclude(**ADDITIONAL_EXCLUDE.get('service', {})).order_by('translations__title'))
-    category = django_filters.ModelChoiceFilter(label='Category', queryset=Category.objects.exclude(**ADDITIONAL_EXCLUDE.get('category', {})).order_by('translations__name'))
+    service = django_filters.ModelChoiceFilter(label='Service', queryset=Service.objects.published().exclude(**ADDITIONAL_EXCLUDE.get('service', {})))
+    category = django_filters.ModelChoiceFilter(label='Category', queryset=Category.objects.exclude(**ADDITIONAL_EXCLUDE.get('category', {})))
 
     class Meta:
         fields = ['q', 'type', 'service', 'category', ]
@@ -36,6 +36,8 @@ class SearchFilters(CustomFilterMixin, django_filters.FilterSet):
         self.filters['type'].extra.update({'choices': TYPES, 'empty_label': FILTER_EMPTY_LABELS.get('type','by type')})
         self.filters['service'].extra.update({'empty_label': FILTER_EMPTY_LABELS.get('service','by service')})
         self.filters['category'].extra.update({'empty_label': FILTER_EMPTY_LABELS.get('category','by category')})
+        self.sort_choices(self.filters['service'])
+        self.sort_choices(self.filters['category'])
         if IS_THERE_COMPANIES:
             self.filters['company'] = django_filters.ModelChoiceFilter('companies', label='Company', queryset=Company.objects.exclude(**ADDITIONAL_EXCLUDE.get('company', {})).order_by('name'))
             self.filters['company'].extra.update({'empty_label': FILTER_EMPTY_LABELS.get('company','by company')})
@@ -45,6 +47,12 @@ class SearchFilters(CustomFilterMixin, django_filters.FilterSet):
                 name = category[0].replace('-', '_')
                 self.filters[name] = django_filters.ModelChoiceFilter('categories', label=category[1], queryset=qs)
                 self.filters[name].extra.update({'empty_label': 'by %s' % FILTER_EMPTY_LABELS.get(name, category[1])})
+    def sort_choices(self, field):
+        field = field.field
+        if isinstance(field.choices, django_filters.fields.ModelChoiceIterator):
+            choices = [(obj.pk, str(obj)) for obj in field.choices.queryset]
+            field.iterator = django_filters.fields.ChoiceIterator
+            field._set_choices(sorted(choices, key=lambda item: item[1]))
 
 
 class SearchFilter(django_filters.Filter):

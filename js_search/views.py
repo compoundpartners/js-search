@@ -33,6 +33,12 @@ from .filters import SearchFilters, PageFilters
 from .constants import TYPES
 from . import DEFAULT_APP_NAMESPACE
 
+try:
+    from custom.js_search.views import CustomMixin
+except:
+    class CustomMixin(object):
+        pass
+
 
 class MixPaginator(Paginator):
 
@@ -84,17 +90,40 @@ def get_language(request):
         lang = get_language_from_request(request, check_path=True)
     return lang
 
+class DefaultMixin(object):
+    def get_filters(self):
+        return {
+            'title': PageFilters,
+            'article': ArticleFilters,
+            'person': PeopleFilters,
+            'event': EventFilters,
+            'service': ServiceFilters,
+        }
 
-class SearchView(MultipleObjectMixin, TemplateView):
+    def get_qss(self, language=None):
+        return {
+            'title': Title.objects.public().filter(
+                Q(page__publication_date__lt=timezone.now()) | Q(page__publication_date__isnull=True),
+                Q(page__publication_end_date__gte=timezone.now()) | Q(page__publication_end_date__isnull=True),
+                Q(redirect__exact='') | Q(redirect__isnull=True),
+                language=language
+            ).exclude(page__searchextension__show_on_search=False).select_related('page').distinct(),
+            'article': Article.objects.published().language(language),
+            'person': Person.objects.published().language(language),
+            'event': Event.objects.published().language(language),
+            'service': Service.objects.published().language(language),
+        }
+
+    def get_sorting(self):
+        return {
+            'person': getattr(settings, 'ALDRYN_PEOPLE_DEFAULT_SORTING', ('last_name',),),
+            'article': ('-publishing_date',),
+        }
+
+
+class SearchView(CustomMixin, DefaultMixin, MultipleObjectMixin, TemplateView):
     template_name = 'js_search/index.html'
     paginator_class = MixPaginator
-    filters = {
-        'title': PageFilters,
-        'article': ArticleFilters,
-        'person': PeopleFilters,
-        'event': EventFilters,
-        'service': ServiceFilters,
-    }
     paginate_by = 20
     strict = False
 
@@ -111,37 +140,25 @@ class SearchView(MultipleObjectMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         language = translation.get_language()
-        self.qss = {
-            'title': Title.objects.public().filter(
-                Q(page__publication_date__lt=timezone.now()) | Q(page__publication_date__isnull=True),
-                Q(page__publication_end_date__gte=timezone.now()) | Q(page__publication_end_date__isnull=True),
-                Q(redirect__exact='') | Q(redirect__isnull=True),
-                language=language
-            ).exclude(page__searchextension__show_on_search=False).select_related('page').distinct(),
-            'article': Article.objects.published().active_translations(language),
-            'person': Person.objects.published().active_translations(language),
-            'event': Event.objects.published().active_translations(language),
-            'service': Service.objects.published().active_translations(language),
-        }
-        self.sorting = {
-            'person': getattr(settings, 'ALDRYN_PEOPLE_DEFAULT_SORTING', ('last_name',),),
-            'article': ('-publishing_date',),
-        }
+        qss = self.get_qss(language=language)
+        filters = self.get_filters()
+        sorting = self.get_sorting()
         requested_type = request.GET.get('type')
         self.object_list = []
         specific_filter = None
         for name, _ in TYPES:
-            if not requested_type or requested_type == name:
-                order_by = ()
-                if requested_type == name:
-                    order_by = self.sorting.get(requested_type, order_by)
-                filterset = self.filters[name](request.GET or None, queryset=self.qss[name].order_by(*order_by))
-                if requested_type == name:
-                    specific_filter = filterset
-                if not filterset.is_bound:
-                    self.object_list.append([])
-                elif filterset.is_bound or filterset.is_valid() or not self.get_strict():
-                    self.object_list.append(filterset.qs.distinct())
+            if name in filters and name in qss:
+                if not requested_type or requested_type == name:
+                    order_by = ()
+                    if requested_type == name:
+                        order_by = sorting.get(requested_type, order_by)
+                    filterset = filters[name](request.GET or None, queryset=qss[name].order_by(*order_by))
+                    if requested_type == name:
+                        specific_filter = filterset
+                    if not filterset.is_bound:
+                        self.object_list.append([])
+                    elif filterset.is_bound or filterset.is_valid() or not self.get_strict():
+                        self.object_list.append(filterset.qs.distinct())
 
 
         pagination = {
@@ -161,9 +178,10 @@ class SearchView(MultipleObjectMixin, TemplateView):
         )
         index = 0
         for name, _ in TYPES:
-            if not requested_type or requested_type == name:
-                context['%s_list' % name] = context['object_list'][index]
-                index += 1
+            if name in filters and name in qss:
+                if not requested_type or requested_type == name:
+                    context['%s_list' % name] = context['object_list'][index]
+                    index += 1
         object_list = []
         for objects in context['object_list']:
             object_list += list(objects)

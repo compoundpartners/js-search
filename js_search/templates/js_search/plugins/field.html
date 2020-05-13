@@ -1,0 +1,16 @@
+{% load i18n %}
+
+{% if instance.title %}
+<h2>{{ instance.title }}</h2>
+{% endif %}
+<form action="/search">
+      <div class="input-container">
+        <div class="text-terms input-group">
+          <input type="text" name="q" class="textinput textInput form-control" id="id_q">
+          <button class="btn btn-search" type="submit">{% trans 'Search' %}</button>
+        </div>
+      </div>
+    {% if instance.results_type %}
+    <input type="hidden" name="type" value="{{ instance.results_type }}">
+    {% endif %}
+</form>
