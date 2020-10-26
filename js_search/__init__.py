@@ -1,3 +1,3 @@
-__version__ = "0.0.20"
+__version__ = "0.0.22"
 
 DEFAULT_APP_NAMESPACE = 'js_search'

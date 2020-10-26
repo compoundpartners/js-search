@@ -34,7 +34,7 @@ from .constants import TYPES
 from . import DEFAULT_APP_NAMESPACE
 
 try:
-    from custom.js_search.views import CustomMixin
+  	from custom.js_search.views import CustomMixin
 except:
     class CustomMixin(object):
         pass
@@ -120,12 +120,8 @@ class DefaultMixin(object):
             'article': ('-publishing_date',),
         }
 
-
-class SearchView(CustomMixin, DefaultMixin, MultipleObjectMixin, TemplateView):
-    template_name = 'js_search/index.html'
-    paginator_class = MixPaginator
-    paginate_by = 20
-    strict = False
+    def get_types(self):
+      return TYPES
 
     def get_strict(self):
         return self.strict
@@ -136,7 +132,7 @@ class SearchView(CustomMixin, DefaultMixin, MultipleObjectMixin, TemplateView):
         self.site_id = getattr(get_current_site(self.request), 'id', None)
         self.valid_languages = get_valid_languages(
             DEFAULT_APP_NAMESPACE, self.request_language, self.site_id)
-        return super(SearchView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         language = translation.get_language()
@@ -146,7 +142,7 @@ class SearchView(CustomMixin, DefaultMixin, MultipleObjectMixin, TemplateView):
         requested_type = request.GET.get('type')
         self.object_list = []
         specific_filter = None
-        for name, _ in TYPES:
+        for name, _ in self.get_types():
             if name in filters and name in qss:
                 if not requested_type or requested_type == name:
                     order_by = ()
@@ -177,7 +173,7 @@ class SearchView(CustomMixin, DefaultMixin, MultipleObjectMixin, TemplateView):
             specific_filter=specific_filter,
         )
         index = 0
-        for name, _ in TYPES:
+        for name, _ in self.get_types():
             if name in filters and name in qss:
                 if not requested_type or requested_type == name:
                     context['%s_list' % name] = context['object_list'][index]
@@ -188,3 +184,9 @@ class SearchView(CustomMixin, DefaultMixin, MultipleObjectMixin, TemplateView):
         context['object_list'] = object_list
         return self.render_to_response(context)
 
+
+class SearchView(CustomMixin, DefaultMixin, MultipleObjectMixin, TemplateView):
+    template_name = 'js_search/index.html'
+    paginator_class = MixPaginator
+    paginate_by = 20
+    strict = False
