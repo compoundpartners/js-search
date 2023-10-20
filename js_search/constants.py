@@ -21,6 +21,20 @@ TYPES = getattr(
     ('event', 'Event'),
     ('service','Service'))
 )
+CONFIGS = getattr(
+    settings,
+    'SEARCH_CONFIGS',
+    (
+        ('default', TYPES),
+    )
+)
+
+CUSTOM_MODULE_NAME = getattr(
+    settings,
+    'CUSTOM_MODULE_NAME',
+    'custom',
+)
+
 FILTER_EMPTY_LABELS = getattr(
     settings,
     'SEARCH_FILTER_EMPTY_LABELS',

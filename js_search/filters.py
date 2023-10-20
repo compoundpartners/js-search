@@ -10,7 +10,7 @@ from .constants import (
     IS_THERE_COMPANIES,
     ADD_FILTERED_CATEGORIES,
     ADDITIONAL_EXCLUDE,
-    TYPES,
+    CONFIGS,
     FILTER_EMPTY_LABELS,
 )
 if IS_THERE_COMPANIES:
@@ -24,7 +24,7 @@ except:
 
 class SearchFilters(CustomFilterMixin, django_filters.FilterSet):
     q = django_filters.CharFilter(label='Search the directory')
-    type = django_filters.ChoiceFilter(label='Type', empty_label='by type', choices=TYPES, widget=forms.RadioSelect())
+    type = django_filters.ChoiceFilter(label='Type', empty_label='by type', choices=CONFIGS[0][1], widget=forms.RadioSelect())
     service = django_filters.ModelChoiceFilter(label='Service', empty_label='by service', queryset=Service.objects.published().exclude(**ADDITIONAL_EXCLUDE.get('service', {})))
     category = django_filters.ModelChoiceFilter(label='Category', empty_label='by category', queryset=Category.objects.exclude(**ADDITIONAL_EXCLUDE.get('category', {})))
 

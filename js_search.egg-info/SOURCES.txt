@@ -21,7 +21,9 @@ js_search.egg-info/top_level.txt
 js_search/migrations/0001_initial.py
 js_search/migrations/0002_searchextension.py
 js_search/migrations/0003_searchfield.py
+js_search/migrations/0004_searchfield_search_url.py
 js_search/migrations/__init__.py
+js_search/templates/.DS_Store
 js_search/templates/js_search/index.html
 js_search/templates/js_search/includes/pagination.html
 js_search/templates/js_search/includes/search_form.html

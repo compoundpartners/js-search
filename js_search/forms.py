@@ -4,7 +4,7 @@ from django import forms
 from django.utils.text import slugify
 from . import models
 from .constants import (
-    TYPES,
+    CONFIGS,
     PLUGIN_LAYOUTS,
 )
 
@@ -16,7 +16,7 @@ if len(PLUGIN_LAYOUT_CHOICES) == 0 or len(PLUGIN_LAYOUT_CHOICES[0]) != 2:
 class SearchFieldForm(forms.ModelForm):
 
     layout = forms.ChoiceField(choices=PLUGIN_LAYOUT_CHOICES, required=False)
-    results_type = forms.ChoiceField(choices=(('', 'All'),) + TYPES, required=False)
+    results_type = forms.ChoiceField(choices=(('', 'All'),) + CONFIGS[0][1], required=False)
 
     #def __init__(self, *args, **kwargs):
         #super(SearchFieldForm, self).__init__(*args, **kwargs)

@@ -3,7 +3,7 @@
 {% if instance.title %}
 <h2>{{ instance.title }}</h2>
 {% endif %}
-<form action="/search">
+<form action="{{ instance.search_url|default:'/search' }}">
       <div class="input-container">
         <div class="text-terms input-group">
           <input type="text" name="q" class="textinput textInput form-control" id="id_q">

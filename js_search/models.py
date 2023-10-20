@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext as _
 from django.dispatch import receiver
 from django.db.models.signals import post_save
@@ -24,7 +23,6 @@ class SearchExtension(PageExtension):
 extension_pool.register(SearchExtension)
 
 
-@python_2_unicode_compatible
 class TitleSearch(models.Model):
     title = models.OneToOneField(
         Title,
@@ -72,7 +70,6 @@ class TitleSearch(models.Model):
         super(TitleSearch, self).save(*args, **kwargs)
 
 
-@python_2_unicode_compatible
 class SearchField(CMSPlugin):
     title = models.CharField(
         max_length=255,
@@ -83,6 +80,12 @@ class SearchField(CMSPlugin):
     results_type = models.CharField(
         max_length=255,
         verbose_name=_('Results'),
+        default='',
+        blank=True,
+    )
+    search_url = models.CharField(
+        max_length=255,
+        verbose_name=_('Search target URL'),
         default='',
         blank=True,
     )
